@@ -1,0 +1,11 @@
+alias s88c='/opt/s88c/s88c.pl'
+
+echo
+echo
+echo '*************************************************'
+echo
+echo 's88c is your friend'
+echo
+echo '*************************************************'
+echo
+echo

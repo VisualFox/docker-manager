@@ -1,0 +1,105 @@
+#!/bin/bash
+
+#sanity check
+mkdir -p /etc/cron.d
+chown -R root:root /etc/cron.d
+
+mkdir -p /etc/nginx
+chown -R root:root /etc/nginx
+
+if [ -z "$HOST_ROOT" ]; then
+ HOST_ROOT="/var/docker/app"
+fi
+
+if [ -z "$APP" ]; then
+	APP=$(basename $HOST_ROOT | tr -cd '[[:alnum:]]' | tr '[:upper:]' '[:lower:]')
+fi
+
+#--------------------------------
+echo create proxy executable
+#--------------------------------
+touch /bin/drush && chmod +x /bin/drush
+
+/bin/cat <<EOM > /bin/drush
+#!/bin/bash
+
+if [ -t 0 ]; then
+    fullpath=\$(pwd)
+    IFS='/'
+    for i in \$fullpath; do
+        if [[ \$count != 0 ]]; then
+           root+="/"
+        fi
+        root+=\$i
+
+        count=\$((count+1))
+        if [[ \$count = 7 ]]; then
+           break;
+        fi
+    done
+
+    if [[ \$count != 7 ]]; then
+        root=\$(pwd)
+    fi
+
+    docker run --net="$(echo $APP)_default" --rm -it -v $HOST_ROOT/data/www:/var/www --link \$(docker ps -q --filter="name=$(echo $APP)_mysql"):mysql drush/drush --root="\$root" "\$@"
+else
+    docker run --net="$(echo $APP)_default" --rm -v $HOST_ROOT/data/www:/var/www --link \$(docker ps -q --filter="name=$(echo $APP)_mysql"):mysql drush/drush "\$@"
+fi
+
+EOM
+#--------------------------------
+touch /bin/nginx && chmod +x /bin/nginx
+
+/bin/cat <<EOM > /bin/nginx
+#!/bin/bash
+
+if [ -t 0 ]; then
+    docker exec -it \$(docker ps -q --filter="name=$(echo $APP)_nginx") nginx "\$@"
+else
+    docker exec \$(docker ps -q --filter="name=$(echo $APP)_nginx") nginx "\$@"
+fi
+
+EOM
+#--------------------------------
+touch /bin/mysql && chmod +x /bin/mysql
+
+/bin/cat <<EOM > /bin/mysql
+#!/bin/bash
+
+if [ -t 0 ]; then
+    docker exec -it \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysql "\$@"
+else
+    docker exec \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysql "\$@"
+fi
+
+EOM
+#--------------------------------
+touch /bin/mysqldump && chmod +x /bin/mysqldump
+
+/bin/cat <<EOM > /bin/mysqldump
+#!/bin/bash
+
+if [ -t 0 ]; then
+    docker exec -it \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqldump "\$@"
+else
+    docker exec \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqldump "\$@"
+fi
+
+EOM
+#--------------------------------
+touch /bin/mysqladmin && chmod +x /bin/mysqladmin
+
+/bin/cat <<EOM > /bin/mysqladmin
+#!/bin/bash
+
+if [ -t 0 ]; then
+    docker exec -it \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqladmin "\$@"
+else
+    docker exec \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqladmin "\$@"
+fi
+
+EOM
+#--------------------------------
+
+env > /root/cron.env && cron -f -L 4
