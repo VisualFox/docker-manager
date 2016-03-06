@@ -16,12 +16,14 @@ RUN apt-get update \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 
-COPY ./res/s88c /opt/s88c
 COPY ./res/bashrc.txt /root/.bashrc
 COPY ./res/bash_aliases.txt /root/.bash_aliases
 COPY ./res/entrypoint /root/entrypoint
 
-RUN chmod +x /opt/s88c/s88c.pl && chmod +x /root/entrypoint && chown -R root:root /opt/s88c
+RUN git clone https://github.com/VisualFox/s88c.git /opt/s88c \
+ && chmod +x /opt/s88c/s88c.pl \
+ && chown -R root:root /opt/s88c \
+ && chmod +x /root/entrypoint
 
 # Set the time zone to the local time zone
 RUN echo "America/New_York" > /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata
