@@ -57,7 +57,7 @@ touch /bin/nginx && chmod +x /bin/nginx
 if [ -t 0 ]; then
     docker exec -it \$(docker ps -q --filter="name=$(echo $APP)_nginx") nginx "\$@"
 else
-    docker exec \$(docker ps -q --filter="name=$(echo $APP)_nginx") nginx "\$@"
+    docker exec -i \$(docker ps -q --filter="name=$(echo $APP)_nginx") nginx "\$@"
 fi
 
 EOM
@@ -70,7 +70,7 @@ touch /bin/mysql && chmod +x /bin/mysql
 if [ -t 0 ]; then
     docker exec -it \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysql "\$@"
 else
-    docker exec \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysql "\$@"
+    docker exec -i \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysql "\$@"
 fi
 
 EOM
@@ -83,7 +83,7 @@ touch /bin/mysqldump && chmod +x /bin/mysqldump
 if [ -t 0 ]; then
     docker exec -it \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqldump "\$@"
 else
-    docker exec \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqldump "\$@"
+    docker exec -i \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqldump "\$@"
 fi
 
 EOM
@@ -96,7 +96,7 @@ touch /bin/mysqladmin && chmod +x /bin/mysqladmin
 if [ -t 0 ]; then
     docker exec -it \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqladmin "\$@"
 else
-    docker exec \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqladmin "\$@"
+    docker exec -i \$(docker ps -q --filter="name=$(echo $APP)_mysql") mysqladmin "\$@"
 fi
 
 EOM
