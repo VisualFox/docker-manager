@@ -26,6 +26,7 @@ touch /bin/drush && chmod +x /bin/drush
 
 if [ -t 0 ]; then
     fullpath=\$(pwd)
+    count=0
     IFS='/'
     for i in \$fullpath; do
         if [[ \$count != 0 ]]; then
@@ -43,9 +44,9 @@ if [ -t 0 ]; then
         root=\$(pwd)
     fi
 
-    docker run --net="$(echo $APP)_default" --rm -it -v $HOST_ROOT/data/www:/var/www --link \$(docker ps -q --filter="name=$(echo $APP)_mysql"):mysql drush/drush:latest-php5 --root="\$root" "\$@"
+    docker run --net="$(echo $APP)_default" --rm -it -v $HOST_ROOT/data/www:/var/www --link \$(docker ps -q --filter="name=$(echo $APP)_mysql"):mysql --link \$(docker ps -q --filter="name=$(echo $APP)_mail"):mail drush/drush:latest-php5 --root="\$root" "\$@"
 else
-    docker run --net="$(echo $APP)_default" --rm -v $HOST_ROOT/data/www:/var/www --link \$(docker ps -q --filter="name=$(echo $APP)_mysql"):mysql drush/drush:latest-php5 "\$@"
+    docker run --net="$(echo $APP)_default" --rm -v $HOST_ROOT/data/www:/var/www --link \$(docker ps -q --filter="name=$(echo $APP)_mysql"):mysql --link \$(docker ps -q --filter="name=$(echo $APP)_mail"):mail drush/drush:latest-php5 "\$@"
 fi
 
 EOM
